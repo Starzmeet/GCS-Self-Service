@@ -1,35 +1,25 @@
 import os
 import shutil
+import sys
 
-# Get the request name from the environment variable
+# Get the request name from environment variable
 request_name = os.environ.get('REQUEST_NAME')
-
 if not request_name:
-    raise ValueError("REQUEST_NAME environment variable not set.")
+    print("REQUEST_NAME environment variable not set.")
+    sys.exit(1)
 
 # Define the new request folder path
-new_request_folder = f'requests/{request_name}'
+request_folder = f'requests/{request_name.lower()}/'
 
 # Create the new request folder
-os.makedirs(new_request_folder, exist_ok=True)
+os.makedirs(request_folder, exist_ok=True)
 
-# Define the source template path
-template_path = 'template/terraform_template.tf'
-
-# Copy the Terraform template to the new request folder
-shutil.copy(template_path, new_request_folder)
-
-# Define the terraform.tfvars path
-tfvars_path = os.path.join(new_request_folder, 'terraform.tfvars')
+# Copy the Terraform template into the new folder
+shutil.copy('template/terraform_template.tf', f'{request_folder}/terraform.tf')
 
 # Replace placeholder values in terraform.tfvars
-with open(tfvars_path, 'r+') as tfvars_file:
-    content = tfvars_file.read()
-    # Replace the placeholder
-    content = content.replace('CLUSTER_NAME', request_name)
-    # Move the file pointer to the beginning and write the modified content
-    tfvars_file.seek(0)
-    tfvars_file.write(content)
-    tfvars_file.truncate()
+with open(f'{request_folder}/terraform.tfvars', 'w') as tfvars:
+    tfvars.write(f'CLUSTER_NAME = "{request_name}"
+')
 
-print(f'Successfully created request folder: {new_request_folder} and updated terraform.tfvars.')
+print(f'Request folder created at: {request_folder}'}
